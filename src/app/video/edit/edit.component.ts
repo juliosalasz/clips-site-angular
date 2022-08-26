@@ -5,10 +5,14 @@ import {
   Input,
   OnChanges,
   SimpleChanges,
+  Output,
+  EventEmitter,
 } from '@angular/core';
 import { ModalService } from 'src/app/services/modal.service';
 import Iclip from 'src/app/models/clip.model';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+
+import { ClipService } from 'src/app/services/clip.service';
 
 @Component({
   selector: 'app-edit',
@@ -17,6 +21,11 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 })
 export class EditComponent implements OnInit, OnDestroy, OnChanges {
   @Input() activeClip: Iclip | null = null;
+  inSubmission = false;
+  showAlert = false;
+  alertColor = 'blue';
+  alertMsg = 'Please wait! Updating clip.';
+  @Output() update = new EventEmitter();
 
   clipID = new FormControl('', {
     nonNullable: true,
@@ -31,7 +40,7 @@ export class EditComponent implements OnInit, OnDestroy, OnChanges {
     title: this.title,
   });
 
-  constructor(private modal: ModalService) {}
+  constructor(private modal: ModalService, private clipService: ClipService) {}
 
   ngOnInit(): void {
     this.modal.register('editClip');
@@ -43,7 +52,33 @@ export class EditComponent implements OnInit, OnDestroy, OnChanges {
     if (!this.activeClip) {
       return;
     }
+    this.inSubmission = false;
+    this.showAlert = false;
     this.clipID.setValue(this.activeClip.docID as string);
     this.title.setValue(this.activeClip.title);
+  }
+  async submit() {
+    if (!this.activeClip) {
+      return;
+    }
+    this.inSubmission = true;
+    this.showAlert = true;
+    this.alertColor = 'blue';
+    this.alertMsg = 'Please wait! Updating clip.';
+    try {
+      await this.clipService.updateClip(this.clipID.value, this.title.value);
+    } catch (error) {
+      this.inSubmission = false;
+      this.alertColor = 'red';
+      this.alertMsg = 'Something went wrong. Try Again Later';
+      return;
+    }
+
+    this.activeClip.title = this.title.value;
+    this.update.emit(this.activeClip);
+
+    this.inSubmission = false;
+    this.alertColor = 'green';
+    this.alertMsg = 'Success!';
   }
 }
