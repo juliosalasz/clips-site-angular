@@ -6,5 +6,7 @@ export default interface Iclip {
   title: string;
   fileName: string;
   url: string;
+  screenshotUrl: string;
   timestamp: firebase.firestore.FieldValue;
+  screenshotFilename: string;
 }

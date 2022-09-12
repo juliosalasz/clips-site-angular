@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { sortedChanges } from '@angular/fire/compat/firestore';
 import { ActivatedRoute, Params } from '@angular/router';
 
 @Component({
